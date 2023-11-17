@@ -9,3 +9,4 @@ A simple microservice-project for converting video files to mp3 files that is or
 - einzelnen Befehl ausführen: mysql -u root -e "BEFEHL"
 - Database leeren: mysql -u root -e "DROP DATABASE auth"
 - User entfernen: mysql -u root -e "DROP USER auth_user@localhost"
+- Cursor = Zeiger auf Zeile in der Datenbank -> bspw. Traversieren der Ergebnisse einer Query
