@@ -49,6 +49,34 @@ def login():
 
     return createJWT(auth.username, os.environ.get("JWT_SECRET"), True)
 
+@server.route("/validate", methods=["POST"])
+def validate():
+    encoded_jwt = request.headers.get("Authorization")
+
+    if not encoded_jwt:
+        return "Missing credentials from token", 401
+    
+    # Authentification header should look liek this:
+    # Authentification: Bearer <token>
+    # more information see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes
+    
+    authentification_header_content = encoded_jwt.split(" ")
+    if len(authentification_header_content) != 2:
+        return "Invalid token format in authentification header", 401
+
+    authentification_type = authentification_header_content[0]
+    if authentification_type != "Bearer":
+        return "Invalid token type", 401
+    
+    encoded_jwt = authentification_header_content[1]
+        
+    try:
+        decoded_jwt = jwt.decode(encoded_jwt, os.environ.get("JWT_SECRET"), algorithm = "HS256")
+    except:
+        return "Not authorized", 401
+    
+    return decoded_jwt, 200
+
 # authz for now = is admin / isn't admin
 def createJWT(username, secret, authz):
     return jwt.encode(
@@ -64,3 +92,8 @@ def createJWT(username, secret, authz):
         secret,
         algorithm="HS256",
     )
+
+# Variable __name__ wird zu "__main__" wenn das Programm direkt ausgeführt wird
+if __name__ == "__main__":
+      # any ip address (otherwise only localhost, ...)
+      server.run(host="0.0.0.0", port=5000)

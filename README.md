@@ -11,6 +11,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 - Aktivierung venv (wenn in Root von Repo): `source python/src/auth/venv/bin/activate`
 - Überprüfung von aktuellen venv in Umgebungsvariablen: `env | grep VIRTUAL`
 - Database erstellen mit init-Skript: `mysql -u root`
+- SQL-Datei ausführen: `mysql -u root < init.sql`
 - einzelnen Befehl ausführen: `mysql -u root -e "BEFEHL"`
 - Database leeren: `mysql -u root -e "DROP DATABASE auth"`
 - User entfernen: `mysql -u root -e "DROP USER auth_user@localhost"`
@@ -43,3 +44,15 @@ A simple microservice-project for converting video files to mp3 files that is or
   5. nochmal Anfrage von Client an Gateway: nur mit JWT
   6. auth-service kann einfach mit Private Key + angewandten Algorithmus vergleichen, ob JWT valide ist
   7. Zugriffsrechte dann über payload überprüfen (für uns nur ein Feld a la: `admin: true / false`) -> wenn Admin, dann Zugriff auf alle Endpoints
+
+### Auth Service implementation
+
+- Variable `__name__` wird zu `__main__` wenn Programm direkt ausgeführt wird
+  ```python
+  if __name__ == '__main__':
+      print(__name__)
+  ```
+- am besten einfach für alles pip3 und python3 verwenden
+- `CC=gcc pip3 install flask_mysqldb`, um spezifischen Compiler zu verwenden (geht auch mit anderen Paketen mit anderen Bedingungen)
+
+- Container bekommt eigene IP-Adresse -> so können wir bspw. dann den Server ansprechen (Flask muss aber diese IP-Adresse kennen) -> IP-Adresse von Container ändert sich jedes Mal, deswegen für Host-Config `0.0.0.0` (= alle möglichen IP-Adressen)
