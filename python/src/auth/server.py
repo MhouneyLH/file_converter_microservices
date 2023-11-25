@@ -25,8 +25,9 @@ def login():
     ### check db for username and password
     cursor = mysql.connection.cursor()
     # query something
-    # %s = whatever it is
+    # %s = whatever it is that gets passed in
     # email is used for username
+    # result is array of rows
     result = cursor.execute(
         "SELECT email, password FROM user WHERE email=%s",
         (auth.username,)
@@ -35,7 +36,7 @@ def login():
     # result holds the rows of the query
     # no users in database
     if result <= 0:
-        return "Invalid credentials: No users found", 401
+        return "Invalid credentials: No users could be found / searched for", 401
 
     # will return a tuple
     user_row = cursor.fetchOne()
@@ -48,4 +49,18 @@ def login():
 
     return createJWT(auth.username, os.environ.get("JWT_SECRET"), True)
 
-def createJWT():
+# authz for now = is admin / isn't admin
+def createJWT(username, secret, authz):
+    return jwt.encode(
+        {
+            "username": username,
+            # exp = expiration
+            # timedelta = expires in 1 day
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+            # issued at = when was the token issued (created / generated)
+            "iat": datetime.datetime.utcnow(),
+            "admin": authz,
+        },
+        secret,
+        algorithm="HS256",
+    )
