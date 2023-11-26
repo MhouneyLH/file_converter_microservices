@@ -1,0 +1,13 @@
+# such config maps are used to store env variables that does not contain sensitive data
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-configmap
+# env variables that are automatically injected into the container
+data:
+  # access the system, thats hosting the cluster (in this case minikube)
+  # -> just localhost would not work
+  MYSQL_HOST: host.minikube.internal
+  MYSQL_USER: auth_user
+  MYSQL_DB: auth
+  MYSQL_PORT: "3306"
