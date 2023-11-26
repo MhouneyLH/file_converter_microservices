@@ -65,4 +65,35 @@ A simple microservice-project for converting video files to mp3 files that is or
 - spec-Format in kubernetes-Konfig-Dateien ist verschieden je nach angegebenem Typ (Deployment, Service, etc.)
 - Kubernetes-API: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/
 - überall, wo man `kind` als Attribut sieht, zählt als Kubernetes-Objekt
-- 
+
+### Gateway Service implementation
+
+- gridfs = Grid File System -> für große Dateien (> 16MB), die nicht in MongoDB gespeichert werden können
+- dafür wird große Datei in viele kleine Dateien aufgeteilt und in MongoDB gespeichert
+- Vorgehensweise mit Hilfe von RabbitMQ (= Message Broker, der verwendet wird, um Nachrichten zwischen Microservices zu senden):
+
+  1. Gateway speichert Video in MongoDB
+  2. Message in RabbitMQ, dass Video in MongoDB gespeichert wurde
+  3. Converter-Service nimmt Message von der Queue, nimmt ID des Videos und weiß somit wo es in MongoDB gespeichert liegt
+  4. Video in mp3 konvertieren
+  5. mp3 in MongoDB speichern
+  6. Message in RabbitMQ (von Converter-Service), dass mp3 in MongoDB gespeichert wurde
+  7. Notification-Service nimmt Message von der Queue und kennt ja die ID der mp3
+  8. Senden von bspw. E-Mail an Client, dass mp3 fertig ist mit einer ID
+  9. Client kann über Gateway mp3 herunterladen (mit Hilfe von JWT und ID)
+
+- Interservice Communication (ISC) = Kommunikation zwischen Microservices
+
+  - **synchron**: Client wartet auf Antwort (bspw. Gateway bei Login mit auth-service)
+    - Blockierend (Client kann nichts anderes machen)
+    - hohe Kopplung zwischen Gateway und Service
+  - **asynchron**: Client wartet nicht auf Antwort (bspw. Gateway bei Upload mit converter-service)
+    - Nicht-Blockierend (Client kann andere Dinge machen)
+    - meistens mit Hilfe von Message Broker (bspw. RabbitMQ), also hier eine Queue
+    - niedrige Kopplung zwischen Gateway und Service
+
+- Konsistenz: alle Microservices müssen immer auf dem gleichen Stand sein
+  - **Strong Consistency**: alle Microservices sind immer auf dem gleichen Stand
+    - bspw. User kann Video erst herunterladen, wenn es konvertiert wurde (bspw. wenn Gateway blockiert wäre bis Converter fertig ist)
+  - **Eventual Consistency**: irgendwann sind alle Microservices auf dem gleichen Stand
+    - bspw. User hätte somit Möglichkeit Video direkt herunterzuladen, obwohl es nocht nicht konvertiert wurde
