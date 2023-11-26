@@ -8,12 +8,16 @@ metadata:
 spec:
   replicas: 2
   selector:
+    # so the deployment knows which pods to manage (see definition of the label in the pod definition [= template])
     matchLabels:
       app: auth
-    strategy:
-      type: RollingUpdate
-      rollingUpdate:
-        maxSurge: 3
+  strategy:
+    # replace the old pods with the new ones
+    type: RollingUpdate
+    rollingUpdate:
+      # the aim is to have 2 pods (see above)
+      # when replacing the old pods it could be necessary to have 3 pods for a short time
+      maxSurge: 3
   template:
     metadata:
       labels:

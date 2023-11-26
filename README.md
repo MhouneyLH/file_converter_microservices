@@ -56,3 +56,13 @@ A simple microservice-project for converting video files to mp3 files that is or
 - `CC=gcc pip3 install flask_mysqldb`, um spezifischen Compiler zu verwenden (geht auch mit anderen Paketen mit anderen Bedingungen)
 
 - Container bekommt eigene IP-Adresse -> so können wir bspw. dann den Server ansprechen (Flask muss aber diese IP-Adresse kennen) -> IP-Adresse von Container ändert sich jedes Mal, deswegen für Host-Config `0.0.0.0` (= alle möglichen IP-Adressen)
+
+### IaC with Kubernetes
+
+- use `s` on a container in k9s to directly open the shell of the container
+- `kubectl apply -f <file>`: apply a configuration file (or a directory with multiple files to apply all of them)
+- k8s schaut immer, ob die aktuelle Konfiguration mit der gewünschten Konfiguration übereinstimmt -> wenn nicht, dann wird die aktuelle Konfiguration angepasst
+- spec-Format in kubernetes-Konfig-Dateien ist verschieden je nach angegebenem Typ (Deployment, Service, etc.)
+- Kubernetes-API: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/
+- überall, wo man `kind` als Attribut sieht, zählt als Kubernetes-Objekt
+- 
