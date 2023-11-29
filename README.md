@@ -100,3 +100,18 @@ A simple microservice-project for converting video files to mp3 files that is or
     - bspw. User hätte somit Möglichkeit Video direkt herunterzuladen, obwohl es nocht nicht konvertiert wurde
 
 - mit Datei `__init__.py` kann man Ordner als Package kennzeichnen
+
+### Wie funktiniert RabbitMQ genau?
+
+![](./assets/images/rabbitmq.png)
+
+- **Producer** = Service, der message schickt -> hier: Gateway
+- **Consumer** = Service, der message empfängt -> hier: bspw. Converter
+- **Broker** = RabbitMQ-Instanz
+- gesendet wird an Exchange -> Weiterleiten an richtige Queue (gibt meistens mehrere Queues mit 1 Rabbitmq-Instanz = 1 Message Broker)
+- von korrekter Queue dann an Consumer
+- **Competing Consumer Pattern** = mehrere Consumer können von einer Queue lesen -> Message 1 an Cons. 1, Message 2 an Cons. 2, Message 3 wieder an Cons. 1, etc.
+- gibt verschiedene Arten von Exchanges (bspw. Fanout, Direct, Topic, Headers) -> hier: Direct (einfach beim Parameter `exchange` einen leeren String angeben)
+- **Message** = JSON-Objekt mit 2 Feldern: `routing_key` und `body`
+- **Routing Key** = Name der Queue, an die die Message gesendet werden soll
+- **Body** = Payload der Message

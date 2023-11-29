@@ -51,3 +51,13 @@ def upload():
             return err
 
     return "Success: File uploaded!", 200
+
+
+@server.route("/download", methods=["GET"])
+def download():
+    # nothing happens for now
+    pass
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=8080)
