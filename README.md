@@ -121,6 +121,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 - **Service** = Gruppe von Pods, die die gleiche Funktionalität haben (mit Hilfe von bspw. Label-Selector)
 - **Ingress** = Haupt-Eingangspunkt von außen + Regeln, die den Zugriff / Routing auf Services definieren (bspw. über Hostname, Pfad, etc.)
 - für Konfiguration, dass man einfach mp3converter.com eingeben kann auf lokaler Maschine und das auf localhost gemappt wird, habe ich folgendes geamcht:
+
   ```bash
   echo "127.0.0.1 mp3converter.com" | sudo tee -a /etc/hosts
 
@@ -131,3 +132,16 @@ A simple microservice-project for converting video files to mp3 files that is or
   # start tunnel
   minikube tunnel
   ```
+
+- um Cluster runter zu skalieren: `kubectl scale deployment <deployment-name> --replicas=0`
+
+### StatefulSet
+
+- **StatefulSet** = wie Deployment, aber mit ein paar Unterschieden:
+  - **Pods** haben einen Namen (id), der sich nicht ändert (bspw. `auth-service-0`) -> wenn Pod failt, ist es leichter existierende Volumes zu den neuen Pods zu mappen
+  - **Pods** haben einen eigenen **Persistent Volume Claim** (PVC), der sich nicht ändert
+  - **Pods** werden in einer bestimmten Reihenfolge gestartet und beendet
+  - **Pods** werden in einer bestimmten Reihenfolge neu gestartet
+  - **Pods** haben einen eigenen **Headless Service**, der sich nicht ändert
+- die einzelnen Pods verhalten sich als **Slaves** (also können nur von PVCs lesen)
+- die Queue-Instanz verhält sich als **Master** (also kann auch schreiben)
