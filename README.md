@@ -82,7 +82,7 @@ A simple microservice-project for converting video files to mp3 files that is or
   8. Senden von bspw. E-Mail an Client, dass mp3 fertig ist mit einer ID
   9. Client kann über Gateway mp3 herunterladen (mit Hilfe von JWT und ID)
 
-- Interservice Communication (ISC) = Kommunikation zwischen Microservices
+- **Interservice Communication** (ISC) = Kommunikation zwischen Microservices
 
   - **synchron**: Client wartet auf Antwort (bspw. Gateway bei Login mit auth-service)
     - Blockierend (Client kann nichts anderes machen)
@@ -92,8 +92,11 @@ A simple microservice-project for converting video files to mp3 files that is or
     - meistens mit Hilfe von Message Broker (bspw. RabbitMQ), also hier eine Queue
     - niedrige Kopplung zwischen Gateway und Service
 
-- Konsistenz: alle Microservices müssen immer auf dem gleichen Stand sein
+- **Konsistenz**: alle Microservices müssen immer auf dem gleichen Stand sein
+
   - **Strong Consistency**: alle Microservices sind immer auf dem gleichen Stand
     - bspw. User kann Video erst herunterladen, wenn es konvertiert wurde (bspw. wenn Gateway blockiert wäre bis Converter fertig ist)
   - **Eventual Consistency**: irgendwann sind alle Microservices auf dem gleichen Stand
     - bspw. User hätte somit Möglichkeit Video direkt herunterzuladen, obwohl es nocht nicht konvertiert wurde
+
+- mit Datei `__init__.py` kann man Ordner als Package kennzeichnen
