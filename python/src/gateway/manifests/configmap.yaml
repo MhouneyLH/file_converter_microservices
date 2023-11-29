@@ -1,0 +1,9 @@
+# such config maps are used to store env variables that does not contain sensitive data
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-configmap
+# env variables that are automatically injected into the container
+data:
+  # in kubernetes the service name is used as the hostname
+  AUTH_SVC_ADDRESS: "auth:5000"

@@ -115,3 +115,19 @@ A simple microservice-project for converting video files to mp3 files that is or
 - **Message** = JSON-Objekt mit 2 Feldern: `routing_key` und `body`
 - **Routing Key** = Name der Queue, an die die Message gesendet werden soll
 - **Body** = Payload der Message
+
+### Kuberentes Ingress
+
+- **Service** = Gruppe von Pods, die die gleiche Funktionalität haben (mit Hilfe von bspw. Label-Selector)
+- **Ingress** = Haupt-Eingangspunkt von außen + Regeln, die den Zugriff / Routing auf Services definieren (bspw. über Hostname, Pfad, etc.)
+- für Konfiguration, dass man einfach mp3converter.com eingeben kann auf lokaler Maschine und das auf localhost gemappt wird, habe ich folgendes geamcht:
+  ```bash
+  echo "127.0.0.1 mp3converter.com" | sudo tee -a /etc/hosts
+
+  # ingress-addon for minikube
+  minikube addons list
+  minikube addons enable ingress
+
+  # start tunnel
+  minikube tunnel
+  ```
