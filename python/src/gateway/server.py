@@ -32,6 +32,7 @@ def loginconnection():
 
 @server.route("/upload", methods=["POST"])
 def upload():
+    # the user has to be logged in, so we validate the token
     # header is needed and should contain valid information
     # the token gets forward to /validate of the auth service
     access, err = validate.token(request)
@@ -41,7 +42,7 @@ def upload():
     if not access["admin"]:
         return "Unauthorized", 401
 
-    if len(request.files) > 1 or len(request.files) < 1:
+    if len(request.files) != 1:
         return "Exactly one file must be uploaded", 400
 
     # key (_), value (f)

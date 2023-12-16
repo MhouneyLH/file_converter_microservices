@@ -144,4 +144,21 @@ A simple microservice-project for converting video files to mp3 files that is or
   - **Pods** werden in einer bestimmten Reihenfolge neu gestartet
   - **Pods** haben einen eigenen **Headless Service**, der sich nicht ändert
 - die einzelnen Pods verhalten sich als **Slaves** (also können nur von PVCs lesen)
-- die Queue-Instanz verhält sich als **Master** (also kann auch schreiben)
+- die Queue-Instanz verhält sich als **Master** (also kann auch schreiben) -> die Master-Slaves-Speicher werden die ganze Zeit mit Master-Speicher synchronisiert
+- Mounting von lokalen Storage mit Storage von Container notwendig -> wenn etwas schiefgeht bei Container wird es dann bei uns lokal gespeichert -> Container wird redeployed und kann dann wieder auf lokalen Storage zugreifen
+- RabbitMQ speichert Messages von Queue in `/var/lib/rabbitmq`
+- **PVC** = **P**ersistent **V**olume **C**laim -> wird in StatefulSet verwendet, um lokalen Storage zu mounten
+- in Pod wird auf PVC gemountet -> PVC besitzt ein Persistent Volume (PV) -> mit diesem PV wird dann auf tatsächlichen lokalen Storage gemountet
+- **Nutzen** = wenn Pod failt, dann wird neuer Pod erstellt und kann auf lokalen Storage zugreifen
+- GUI für RabbitMQ muss ähnlich wie unsere "Domain" von Container auf lokale Maschine gemappt werden (**tatsächlich muss man hier die Adresse von dem minikube eingeben, welche man mit `minikube ip` erhält**)
+  ```bash
+  echo "127.0.0.1 rabbitmq-manager.com" | sudo tee -a /etc/hosts
+  ```
+- Erhalten von Informationen über Pod: `kubectl describe pod rabbitmq`
+- Konfiguration von PVC ist immutable (als kann während Laufzeit nicht mehr geändert werden) -> wenn da ein Fehler war, alles, was damit in Verbindung steht, neustarten
+  ```bash
+  kubectl delete -f ./
+  kubectl apply -f ./
+  ```
+- wenn rabbitmq UI erreichbar sein soll: daran denken, dass `minikube tunnel` ausgeführt wird
+- Default-Anmeldedaten für RabbitMQ: `guest:guest`

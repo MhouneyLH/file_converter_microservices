@@ -1,7 +1,6 @@
 import os
 import requests
 
-
 def token(request):
     """
     Validate token. This is a docstring.
