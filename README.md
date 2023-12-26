@@ -165,6 +165,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 
 ## Testen, ob bis hierhin die Queues schonmal funktionen
 
+- Was bedeutet Bearer?
 - convertete Videos sollten sich in mp3-Queue aufstauen, weil ich die ja noch nicht von der Queue abhole
 
 ```bash

@@ -36,6 +36,8 @@ def upload():
     # header is needed and should contain valid information
     # the token gets forward to /validate of the auth service
     access, err = validate.token(request)
+    if err:
+        return err
 
     # json string to python object
     access = json.loads(access)
