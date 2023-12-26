@@ -1,10 +1,12 @@
 /* user for the actual database */
-CREATE USER 'auth_user'@'mp3converter.com' IDENTIFIED BY 'Auth123';
+-- CREATE USER 'auth_user'@'mp3converter.com' IDENTIFIED BY 'Auth123';
+CREATE USER 'auth_user'@'%' IDENTIFIED BY 'Auth123';
 
 CREATE DATABASE auth;
 
 /* this user will have the rights to connect to the API-Gateway */
-GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'mp3converter.com';
+-- GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'mp3converter.com';
+GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'%';
 FLUSH PRIVILEGES;
 
 /* use this database */

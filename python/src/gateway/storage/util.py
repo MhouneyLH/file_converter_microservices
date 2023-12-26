@@ -33,8 +33,11 @@ def upload(f, fs, channel, access):
                 delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
             ),
         )
-    except:
+    except Exception as err:
         # if sending message to queue fails, delete file from gridfs
         # -> we don't want to have a file in the database that is not in the queue and not needeed
         fs.delete(file_id)
-        return "Internal server error: Could not send message to queue", 500
+        return (
+            "Internal server error: Could not send message to queue: " + str(err),
+            500,
+        )

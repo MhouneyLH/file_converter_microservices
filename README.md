@@ -9,6 +9,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 - venv (Virtual Environment) für Python verwenden -> für dieses Umgebung dann Dinge installieren
 - Erstellung venv: `python3 -m venv venv`
 - Aktivierung venv (wenn in Root von Repo): `source python/src/auth/venv/bin/activate`
+- Deaktivierung venv: `deactivate`
 - Überprüfung von aktuellen venv in Umgebungsvariablen: `env | grep VIRTUAL`
 - Database erstellen mit init-Skript: `mysql -u root`
 - SQL-Datei ausführen: `mysql -u root < init.sql`

@@ -5,7 +5,7 @@ from convert import to_mp3
 
 
 def main():
-    client = MongoClient("host.minikube.internal", 27017)
+    client = MongoClient("mongodb-service", 27017)
     # Syntax: client.{datenbank_die_existiert}
     db_videos = client.videos
     db_mp3s = client.mp3s
@@ -31,7 +31,8 @@ def main():
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
     channel.basic_consume(
-        queue=os.environ.get("VIDEO_QUEUE"), on_message_callback=callback
+        queue=os.environ.get("VIDEO_QUEUE"),
+        on_message_callback=callback,
     )
 
     print("Waiting for messages. To exit press CTRL+C")
