@@ -165,9 +165,25 @@ A simple microservice-project for converting video files to mp3 files that is or
 
 ## Testen, ob bis hierhin die Queues schonmal funktionen
 
-- Was bedeutet Bearer?
-- convertete Videos sollten sich in mp3-Queue aufstauen, weil ich die ja noch nicht von der Queue abhole
+- Was sollte passieren?
+  - convertete Videos stauen sich in video-Queue auf, weil ich die ja noch nicht von der Queue abhole
+- Testen mit
 
-```bash
+  ```bash
+  youtube-dl {file-url}
 
-```
+  # create JWT
+  curl -X POST http://mp3converter.com/login -u lucas@email.com:Auth123
+
+  # upload video
+  curl -X POST -F 'file=@{path/to/your/file}' -H 'Authorization: Bearer {the-jwt-you-got}' http://mp3converter.com/upload
+
+  # You should get a message like: "Success: File uploaded!"
+  ```
+
+- Was ist Bearer?
+  - Typ-Attribut im HTTP-Header
+  - to bear = etwas vorlegen
+  - Inhaber von Token ist berechtigt, auf Ressource zuzugreifen, indem einfach vorgelegt wird (Besitz davon allein reicht also aus, um Zugriff zu erhalten)
+- Now you should see the video in the mp3-queue in the RabbitMQ UI
+  ![](./assets/images/video_upload_in_rabbitmq.png)
