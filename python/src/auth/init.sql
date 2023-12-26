@@ -1,11 +1,11 @@
-/* THIS IS LIKE A SQL SCRIPT */
 /* user for the actual database */
-CREATE USER 'auth_user'@'localhost' IDENTIFIED BY 'auth_user123';
+CREATE USER 'auth_user'@'mp3converter.com' IDENTIFIED BY 'Auth123';
 
 CREATE DATABASE auth;
 
 /* this user will have the rights to connect to the API-Gateway */
-GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'localhost';
+GRANT ALL PRIVILEGES ON auth.* TO 'auth_user'@'mp3converter.com';
+FLUSH PRIVILEGES;
 
 /* use this database */
 USE auth;
@@ -16,4 +16,5 @@ CREATE TABLE user (
     password VARCHAR(255) NOT NULL
 );
 
-INSERT INTO user(email, password) VALUES ('lucas@email.com', "Huhn123");
+/* With this data the user can authenticate */
+INSERT INTO user(email, password) VALUES ('lucas@email.com', "Auth123");

@@ -21,7 +21,7 @@ channel = connection.channel()
 
 
 @server.route("/login", methods=["POST"])
-def loginconnection():
+def login():
     token, err = access.login(request)
 
     if err:

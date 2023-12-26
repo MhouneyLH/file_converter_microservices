@@ -14,7 +14,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 - SQL-Datei ausführen: `mysql -u root < init.sql`
 - einzelnen Befehl ausführen: `mysql -u root -e "BEFEHL"`
 - Database leeren: `mysql -u root -e "DROP DATABASE auth"`
-- User entfernen: `mysql -u root -e "DROP USER auth_user@localhost"`
+- User entfernen: `mysql -u root -e "DROP USER 'auth_user@localhost'"`
 - Cursor = Zeiger auf Zeile in der Datenbank -> bspw. Traversieren der Ergebnisse einer Query
 
 ### JSON Web Token
@@ -130,7 +130,7 @@ A simple microservice-project for converting video files to mp3 files that is or
   minikube addons enable ingress
 
   # start tunnel
-  minikube tunnel
+  minikube tunnel --bind-address "127.0.0.1"
   ```
 
 - um Cluster runter zu skalieren: `kubectl scale deployment <deployment-name> --replicas=0`
@@ -150,7 +150,7 @@ A simple microservice-project for converting video files to mp3 files that is or
 - **PVC** = **P**ersistent **V**olume **C**laim -> wird in StatefulSet verwendet, um lokalen Storage zu mounten
 - in Pod wird auf PVC gemountet -> PVC besitzt ein Persistent Volume (PV) -> mit diesem PV wird dann auf tatsächlichen lokalen Storage gemountet
 - **Nutzen** = wenn Pod failt, dann wird neuer Pod erstellt und kann auf lokalen Storage zugreifen
-- GUI für RabbitMQ muss ähnlich wie unsere "Domain" von Container auf lokale Maschine gemappt werden (**tatsächlich muss man hier die Adresse von dem minikube eingeben, welche man mit `minikube ip` erhält**)
+- GUI für RabbitMQ muss ähnlich wie unsere "Domain" von Container auf lokale Maschine gemappt werden (gleiche Adresse, wie für mp3converter.com verwenden!)
   ```bash
   echo "127.0.0.1 rabbitmq-manager.com" | sudo tee -a /etc/hosts
   ```
@@ -160,5 +160,13 @@ A simple microservice-project for converting video files to mp3 files that is or
   kubectl delete -f ./
   kubectl apply -f ./
   ```
-- wenn rabbitmq UI erreichbar sein soll: daran denken, dass `minikube tunnel` ausgeführt wird
+- wenn rabbitmq UI erreichbar sein soll: daran denken, dass `minikube tunnel --bind-address "127.0.0.1"` ausgeführt wird
 - Default-Anmeldedaten für RabbitMQ: `guest:guest`
+
+## Testen, ob bis hierhin die Queues schonmal funktionen
+
+- convertete Videos sollten sich in mp3-Queue aufstauen, weil ich die ja noch nicht von der Queue abhole
+
+```bash
+
+```
