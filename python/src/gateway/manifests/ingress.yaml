@@ -4,9 +4,9 @@ metadata:
   name: gateway-ingress
   # used to configure the ingress controller
   annotations:
-    nginx.ingress.kubernetes.ip/proxy-body-size: "0"
-    nginx.ingress.kubernetes.ip/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.ip/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec: 
   rules:
     # requests to this host on local machine will get mapped to localhost
