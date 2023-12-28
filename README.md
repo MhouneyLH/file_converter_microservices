@@ -188,3 +188,16 @@ A simple microservice-project for converting video files to mp3 files that is or
   - Inhaber von Token ist berechtigt, auf Ressource zuzugreifen, indem einfach vorgelegt wird (Besitz davon allein reicht also aus, um Zugriff zu erhalten)
 - Now you should see the video in the mp3-queue in the RabbitMQ UI
   ![](./assets/images/video_upload_in_rabbitmq.png)
+- das wird schon alles auch in der Datenbank gespeichert, diese ist aber noch nicht persistent (also wenn ich den Container neustarte, werden die Dinger darin nicht gespeichert)
+
+go in shell of mongodb deployment
+mongosh
+show databases
+use mp3s
+show collections
+db.fs.files.find()
+db.fs.files.find({"\_id": ObjectId("658d7e8dde11e3e547cbb164")}) -> diese Id kann man relativ einfach in der Queue finden, wenn man Message nimmt und dann in Body schaut
+mongofiles --db=mp3s get_id --local=test.mp3 '{"$oid": "658d7e8dde11e3e547cbb164"}'
+k cp mongodb-deployment-7cfc99f98-qv47f:/test.mp3 test.mp3
+
+- Notification Service konsumiert Messages von Converter
