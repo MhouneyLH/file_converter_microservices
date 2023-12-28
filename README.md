@@ -201,3 +201,6 @@ mongofiles --db=mp3s get_id --local=test.mp3 '{"$oid": "658d7e8dde11e3e547cbb164
 k cp mongodb-deployment-7cfc99f98-qv47f:/test.mp3 test.mp3
 
 - Notification Service konsumiert Messages von Converter
+
+- Downloading converted file
+  curl --output mp3_download.mp3 -X GET -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imx1Y2FzLmh1ZW5uaWdlcjAyQGdtYWlsLmNvbSIsImV4cCI6MTcwMzg2NTQzNywiaWF0IjoxNzAzNzc5MDM3LCJhZG1pbiI6dHJ1ZX0.HX5jgJhOccIKKo4THT8ljgNytABq5qf2lbA5KsBcAbg' "http://mp3converter.com/download?fid=658d9dfa971485f6829c2573"

@@ -19,4 +19,4 @@ CREATE TABLE user (
 );
 
 /* With this data the user can authenticate */
-INSERT INTO user(email, password) VALUES ('lucas@email.com', "Auth123");
+INSERT INTO user(email, password) VALUES ('lucas.huenniger02@gmail.com', "Auth123");

@@ -2,7 +2,7 @@ import os
 import gridfs
 import pika  # for rabbitmq
 import json
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_pymongo import PyMongo  # store files (with gridfs to store large files)
 from auth import validate
 from auth_svc import access

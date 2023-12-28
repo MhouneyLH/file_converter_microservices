@@ -19,11 +19,13 @@ def notification(message):
         msg["To"] = receiver_address
 
         # connect to googles smtp server
-        session = smtplib.SMTP("smtp.gmail.com")
+        TLS_PORT = 587
+        session = smtplib.SMTP("smtp.gmail.com", TLS_PORT)
         session.starttls()
         session.login(sender_address, sender_password)
         session.send_message(msg, sender_address, receiver_address)
         session.quit()
         print("Email sent")
     except Exception as err:
+        print("Error sending email: ", err)
         return "Internal server error: " + str(err), 500
