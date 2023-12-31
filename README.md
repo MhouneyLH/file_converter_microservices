@@ -1,206 +1,169 @@
-# file_converter_microservices
+<a name="readme_top"></a>
 
-A simple microservice-project for converting video files to mp3 files that is orchestrated using Kubernetes.
+# File Converter Microservice Architecture
 
-## My notes
+A simple microservice-project for converting video files to mp3 files with authentification via JSON Web Token using kubernetes (with minikube) and docker for orchestration. The project is based on [a tutorial](https://www.youtube.com/watch?v=hmkF77F9TLw) by [@kantancoding](https://github.com/kantancoding). (his [repo](https://github.com/kantancoding/microservices-python)) I made some changes for keeping it up to date and to make it more understandable for me.
 
-### General
+## 🔢 Getting Started
 
-- venv (Virtual Environment) für Python verwenden -> für dieses Umgebung dann Dinge installieren
-- Erstellung venv: `python3 -m venv venv`
-- Aktivierung venv (wenn in Root von Repo): `source python/src/auth/venv/bin/activate`
-- Deaktivierung venv: `deactivate`
-- Überprüfung von aktuellen venv in Umgebungsvariablen: `env | grep VIRTUAL`
-- Database erstellen mit init-Skript: `mysql -u root`
-- SQL-Datei ausführen: `mysql -u root < init.sql`
-- einzelnen Befehl ausführen: `mysql -u root -e "BEFEHL"`
-- Database leeren: `mysql -u root -e "DROP DATABASE auth"`
-- User entfernen: `mysql -u root -e "DROP USER 'auth_user@localhost'"`
-- Cursor = Zeiger auf Zeile in der Datenbank -> bspw. Traversieren der Ergebnisse einer Query
+Requirements:
 
-### JSON Web Token
+- [Docker](https://www.docker.com/get-started/) installed
+- [kubectl](https://kubernetes.io/de/docs/tasks/tools/install-kubectl/) installed
+- [minikube](https://kubernetes.io/de/docs/tasks/tools/install-minikube/) installed
+- [MySQL](https://dev.mysql.com/doc/refman/8.0/en/installing.html) installed
+- [Python3](https://realpython.com/installing-python/) installed
+- [k9s](https://k9scli.io/topics/install/) or something similar installed
 
-- JWT = **J**SON **W**eb **T**oken
-- Client Zugriff außerhalb von Cluster über Gateway + Funktionen werden darüber abgebildet mit Endpoints (bspw. `/upload`)
-- Frage klären: Wann Zugriff erlauben?
-- Basic Access Authentication = Username + Passwort -> wird bei jedem Request mitgeschickt -> nicht wirklich sicher
-- an sich ist JWT einfach ein Token, welcher in base64 kodierte Daten enthält (s. Bsp.)
-  `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`
-- dekodiert sind es 3 JSON-Dateien, die durch Punkte getrennt sind
+Procedure:
 
-  - Header: verwendeter Algorithmus und Token-Typ
-    - HS256 = symmetrisch (also nur 1 Private Key) -> NUR auth-service kennt diesen
-    - Bsp.: `{"alg": "HS256", "typ": "JWT"}`
-  - Payload: Nutzdaten, welche übermittelt werden sollen
-    - Bsp.:`{"sub": "1234567890", "name": "John Doe", "iat": 1516239022}`
-  - Verify Signature: digitale Signatur basierend auf Header und Payload + Secrets (Private Key)
-    - Bsp.:`HMACSHA256(base64UrlEncode(header) + "." + base64UrlEncode(payload), secret)`
+1.  Clone the repository
+    ```sh
+    git clone https://github.com/MhouneyLH/file_converter_microservices.git
+    ```
+2.  When you want to work for a specific microservice, you should use the virtual environment
+    ```sh
+    cd <microservice-directory>
+    source venv/bin/activate
+    ```
+3.  Start Docker
+    ```sh
+    sudo systemctl start docker
+    ```
+4.  Start minikube
 
-- Zusammengefasster Auth-Flow:
+    ```sh
+    minikube start
+    ```
 
-  1. Nutzer meldet sich mittels Basic Access Authentication an
-  2. Auth-service erstellt ein JWT
-  3. Auth-service verschlüsselt diesen JWT mit dem Private Key
-  4. JTW kommt zurück an Client
-  5. nochmal Anfrage von Client an Gateway: nur mit JWT
-  6. auth-service kann einfach mit Private Key + angewandten Algorithmus vergleichen, ob JWT valide ist
-  7. Zugriffsrechte dann über payload überprüfen (für uns nur ein Feld a la: `admin: true / false`) -> wenn Admin, dann Zugriff auf alle Endpoints
+5.  **First time:** Adjust `/etc/hosts` (So we can use the domain names for the services)
 
-### Auth Service implementation
+    ```sh
+    echo "127.0.0.1 mp3converter.com" | sudo tee -a /etc/hosts
+    echo "127.0.0.1 rabbitmq-manager.com" | sudo tee -a /etc/hosts
+    ```
 
-- Variable `__name__` wird zu `__main__` wenn Programm direkt ausgeführt wird
-  ```python
-  if __name__ == '__main__':
-      print(__name__)
-  ```
-- am besten einfach für alles pip3 und python3 verwenden
-- `CC=gcc pip3 install flask_mysqldb`, um spezifischen Compiler zu verwenden (geht auch mit anderen Paketen mit anderen Bedingungen)
+6.  **First time:** Enable Ingress for minikube
+    ```sh
+    minikube addons list
+    minikube addons enable ingress
+    ```
+7.  Start minikube tunnel (for exposing the services on a specific ip address)
 
-- Container bekommt eigene IP-Adresse -> so können wir bspw. dann den Server ansprechen (Flask muss aber diese IP-Adresse kennen) -> IP-Adresse von Container ändert sich jedes Mal, deswegen für Host-Config `0.0.0.0` (= alle möglichen IP-Adressen)
+    ```sh
+    minikube tunnel --bind-address "127.0.0.1"
+    ```
 
-### IaC with Kubernetes
+8.  Use something like [k9s](https://k9scli.io/) for monitoring the cluster.
 
-- use `s` on a container in k9s to directly open the shell of the container
-- `kubectl apply -f <file>`: apply a configuration file (or a directory with multiple files to apply all of them)
-- k8s schaut immer, ob die aktuelle Konfiguration mit der gewünschten Konfiguration übereinstimmt -> wenn nicht, dann wird die aktuelle Konfiguration angepasst
-- spec-Format in kubernetes-Konfig-Dateien ist verschieden je nach angegebenem Typ (Deployment, Service, etc.)
-- Kubernetes-API: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/
-- überall, wo man `kind` als Attribut sieht, zählt als Kubernetes-Objekt
+    ```sh
+    k9s
+    ```
 
-### Gateway Service implementation
+9.  Initialize the local MySQL database. (for auth)
 
-- gridfs = Grid File System -> für große Dateien (> 16MB), die nicht in MongoDB gespeichert werden können
-- dafür wird große Datei in viele kleine Dateien aufgeteilt und in MongoDB gespeichert
-- Vorgehensweise mit Hilfe von RabbitMQ (= Message Broker, der verwendet wird, um Nachrichten zwischen Microservices zu senden):
+    ```sh
+    mysql -u root < ./src/auth/init.sql
+    ```
 
-  1. Gateway speichert Video in MongoDB
-  2. Message in RabbitMQ, dass Video in MongoDB gespeichert wurde
-  3. Converter-Service nimmt Message von der Queue, nimmt ID des Videos und weiß somit wo es in MongoDB gespeichert liegt
-  4. Video in mp3 konvertieren
-  5. mp3 in MongoDB speichern
-  6. Message in RabbitMQ (von Converter-Service), dass mp3 in MongoDB gespeichert wurde
-  7. Notification-Service nimmt Message von der Queue und kennt ja die ID der mp3
-  8. Senden von bspw. E-Mail an Client, dass mp3 fertig ist mit einer ID
-  9. Client kann über Gateway mp3 herunterladen (mit Hilfe von JWT und ID)
+10. Apply all manifests in the `./src` directory.
 
-- **Interservice Communication** (ISC) = Kommunikation zwischen Microservices
+    ```sh
+    kubectl apply --recursive -f ./src
 
-  - **synchron**: Client wartet auf Antwort (bspw. Gateway bei Login mit auth-service)
-    - Blockierend (Client kann nichts anderes machen)
-    - hohe Kopplung zwischen Gateway und Service
-  - **asynchron**: Client wartet nicht auf Antwort (bspw. Gateway bei Upload mit converter-service)
-    - Nicht-Blockierend (Client kann andere Dinge machen)
-    - meistens mit Hilfe von Message Broker (bspw. RabbitMQ), also hier eine Queue
-    - niedrige Kopplung zwischen Gateway und Service
+    # OR
 
-- **Konsistenz**: alle Microservices müssen immer auf dem gleichen Stand sein
+    kubectl apply -f ./src/auth/manifests
+    kubectl apply -f ./src/converter/manifests
+    kubectl apply -f ./src/notification/manifests
+    kubectl apply -f ./src/gateway/manifests
+    kubectl apply -f ./src/rabbitmq/manifests
+    kubectl apply -f ./src/mongodb/manifests
+    ```
 
-  - **Strong Consistency**: alle Microservices sind immer auf dem gleichen Stand
-    - bspw. User kann Video erst herunterladen, wenn es konvertiert wurde (bspw. wenn Gateway blockiert wäre bis Converter fertig ist)
-  - **Eventual Consistency**: irgendwann sind alle Microservices auf dem gleichen Stand
-    - bspw. User hätte somit Möglichkeit Video direkt herunterzuladen, obwohl es nocht nicht konvertiert wurde
+<p align="right">(<a href="#readme_top">back to top</a>)</p>
 
-- mit Datei `__init__.py` kann man Ordner als Package kennzeichnen
+## 🔢 Usage
 
-### Wie funktiniert RabbitMQ genau?
+You can use any tool you want for making HTTP-Requests. I just used [curl](https://curl.se/) for testing the services.
 
-![](./assets/images/rabbitmq.png)
+1. Get a JSON Web Token for authentication
 
-- **Producer** = Service, der message schickt -> hier: Gateway
-- **Consumer** = Service, der message empfängt -> hier: bspw. Converter
-- **Broker** = RabbitMQ-Instanz
-- gesendet wird an Exchange -> Weiterleiten an richtige Queue (gibt meistens mehrere Queues mit 1 Rabbitmq-Instanz = 1 Message Broker)
-- von korrekter Queue dann an Consumer
-- **Competing Consumer Pattern** = mehrere Consumer können von einer Queue lesen -> Message 1 an Cons. 1, Message 2 an Cons. 2, Message 3 wieder an Cons. 1, etc.
-- gibt verschiedene Arten von Exchanges (bspw. Fanout, Direct, Topic, Headers) -> hier: Direct (einfach beim Parameter `exchange` einen leeren String angeben)
-- **Message** = JSON-Objekt mit 2 Feldern: `routing_key` und `body`
-- **Routing Key** = Name der Queue, an die die Message gesendet werden soll
-- **Body** = Payload der Message
+   ```sh
+   curl -X POST http://mp3converter.com/login <your_defined_email_address>:<your_defined_password>
+   ```
 
-### Kuberentes Ingress
+2. Upload a `.mp4` or `.mkv` file (with audio).
 
-- **Service** = Gruppe von Pods, die die gleiche Funktionalität haben (mit Hilfe von bspw. Label-Selector)
-- **Ingress** = Haupt-Eingangspunkt von außen + Regeln, die den Zugriff / Routing auf Services definieren (bspw. über Hostname, Pfad, etc.)
-- für Konfiguration, dass man einfach mp3converter.com eingeben kann auf lokaler Maschine und das auf localhost gemappt wird, habe ich folgendes geamcht:
+   ```sh
+   curl -X POST -F 'file=@<path_to_file>' -H 'Authentification: Bearer <your_json_web_token>' http://mp3converter.com/upload
+   ```
 
-  ```bash
-  echo "127.0.0.1 mp3converter.com" | sudo tee -a /etc/hosts
+3. Now you should get a message with an id to your in `./src/notification/manifests/configmap.yaml` defined email address. ([Create an app password in your google account settings and use it for the email password](https://support.google.com/accounts/answer/185833?hl=de))
 
-  # ingress-addon for minikube
-  minikube addons list
-  minikube addons enable ingress
+4. Download the converted file.
 
-  # start tunnel
-  minikube tunnel --bind-address "127.0.0.1"
-  ```
+   ```sh
+   curl --output <path_for_downloaded_file> -X GET -H 'Authorization: Bearer <your_json_web_token>' "http://mp3converter.com/download?fid=<id_from_notification>"
+   ```
 
-- um Cluster runter zu skalieren: `kubectl scale deployment <deployment-name> --replicas=0`
+<p align="right">(<a href="#readme_top">back to top</a>)</p>
 
-### StatefulSet
+## 📦 Architecture and explanation
 
-- **StatefulSet** = wie Deployment, aber mit ein paar Unterschieden:
-  - **Pods** haben einen Namen (id), der sich nicht ändert (bspw. `auth-service-0`) -> wenn Pod failt, ist es leichter existierende Volumes zu den neuen Pods zu mappen
-  - **Pods** haben einen eigenen **Persistent Volume Claim** (PVC), der sich nicht ändert
-  - **Pods** werden in einer bestimmten Reihenfolge gestartet und beendet
-  - **Pods** werden in einer bestimmten Reihenfolge neu gestartet
-  - **Pods** haben einen eigenen **Headless Service**, der sich nicht ändert
-- die einzelnen Pods verhalten sich als **Slaves** (also können nur von PVCs lesen)
-- die Queue-Instanz verhält sich als **Master** (also kann auch schreiben) -> die Master-Slaves-Speicher werden die ganze Zeit mit Master-Speicher synchronisiert
-- Mounting von lokalen Storage mit Storage von Container notwendig -> wenn etwas schiefgeht bei Container wird es dann bei uns lokal gespeichert -> Container wird redeployed und kann dann wieder auf lokalen Storage zugreifen
-- RabbitMQ speichert Messages von Queue in `/var/lib/rabbitmq`
-- **PVC** = **P**ersistent **V**olume **C**laim -> wird in StatefulSet verwendet, um lokalen Storage zu mounten
-- in Pod wird auf PVC gemountet -> PVC besitzt ein Persistent Volume (PV) -> mit diesem PV wird dann auf tatsächlichen lokalen Storage gemountet
-- **Nutzen** = wenn Pod failt, dann wird neuer Pod erstellt und kann auf lokalen Storage zugreifen
-- GUI für RabbitMQ muss ähnlich wie unsere "Domain" von Container auf lokale Maschine gemappt werden (gleiche Adresse, wie für mp3converter.com verwenden!)
-  ```bash
-  echo "127.0.0.1 rabbitmq-manager.com" | sudo tee -a /etc/hosts
-  ```
-- Erhalten von Informationen über Pod: `kubectl describe pod rabbitmq`
-- Konfiguration von PVC ist immutable (als kann während Laufzeit nicht mehr geändert werden) -> wenn da ein Fehler war, alles, was damit in Verbindung steht, neustarten
-  ```bash
-  kubectl delete -f ./
-  kubectl apply -f ./
-  ```
-- wenn rabbitmq UI erreichbar sein soll: daran denken, dass `minikube tunnel --bind-address "127.0.0.1"` ausgeführt wird
-- Default-Anmeldedaten für RabbitMQ: `guest:guest`
+> I also have some more notes [here](./assets/NOTES.md). (but they are a bit messy and bilingual)
 
-## Testen, ob bis hierhin die Queues schonmal funktionen
+![](./assets/images/architecture_overview.png)
 
-- Was sollte passieren?
-  - convertete Videos stauen sich in video-Queue auf, weil ich die ja noch nicht von der Queue abhole
-- Testen mit
+### Auth Flow
 
-  ```bash
-  youtube-dl {file-url}
+1. User signs up with email and password (Basic Access Authentication)
+2. Auth-service creates a JWT
+3. Auth-service encrypts this JWT with the private key (see `./src/auth/manifests/secret.yaml` for the secret)
+4. JWT comes back to client
+5. Client makes request to gateway with JWT (uploading a file)
+6. Gateway checks if JWT is valid (with private key) using the auth-service
+7. Gateway checks if user is admin (with payload of JWT) using the auth-service (at the moment just false / true)
 
-  # create JWT
-  curl -X POST http://mp3converter.com/login -u lucas@email.com:Auth123
+### Information Flow
 
-  # upload video
-  curl -X POST -F 'file=@{path/to/your/file}' -H 'Authorization: Bearer {the-jwt-you-got}' http://mp3converter.com/upload
+1. User authenticates (see Auth Flow)
+2. User uploads a file to the gateway
+3. Gateway stores the file in MongoDB
+4. Gateway sends a message to RabbitMQ, that a file was uploaded (queue=`video`)
+5. Converter-service takes the message from the queue and knows the ID of the video in MongoDB
+6. Converter-service converts the video to mp3
+7. Converter-service stores the mp3 in MongoDB
+8. Converter-service sends a message to RabbitMQ, that a mp3 was created (queue=`mp3`)
+9. Notification-service takes the message from the queue and knows the ID of the mp3 in MongoDB
+10. Notification-service sends an email to the user with the download link
+11. User can download the mp3 from the gateway (with the ID of the mp3 and the JWT)
 
-  # You should get a message like: "Success: File uploaded!"
-  ```
+### Why using MongoDB for storage?
 
-- Was ist Bearer?
-  - Typ-Attribut im HTTP-Header
-  - to bear = etwas vorlegen
-  - Inhaber von Token ist berechtigt, auf Ressource zuzugreifen, indem einfach vorgelegt wird (Besitz davon allein reicht also aus, um Zugriff zu erhalten)
-- Now you should see the video in the mp3-queue in the RabbitMQ UI
-  ![](./assets/images/video_upload_in_rabbitmq.png)
-- das wird schon alles auch in der Datenbank gespeichert, diese ist aber noch nicht persistent (also wenn ich den Container neustarte, werden die Dinger darin nicht gespeichert)
+- with MongoDB you can store files up to 16MB
+  -> problem = videos are mostly > 16MB
+- Solution = Use GridFS for storing files > 16MB (file is split into smaller files and stored in MongoDB)
 
-go in shell of mongodb deployment
-mongosh
-show databases
-use mp3s
-show collections
-db.fs.files.find()
-db.fs.files.find({"\_id": ObjectId("658d7e8dde11e3e547cbb164")}) -> diese Id kann man relativ einfach in der Queue finden, wenn man Message nimmt und dann in Body schaut
-mongofiles --db=mp3s get_id --local=test.mp3 '{"$oid": "658d7e8dde11e3e547cbb164"}'
-k cp mongodb-deployment-7cfc99f98-qv47f:/test.mp3 test.mp3
+<p align="right">(<a href="#readme_top">back to top</a>)</p>
 
-- Notification Service konsumiert Messages von Converter
+## 🐛 Known Issues and Bugs
 
-- Downloading converted file
-  curl --output mp3_download.mp3 -X GET -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imx1Y2FzLmh1ZW5uaWdlcjAyQGdtYWlsLmNvbSIsImV4cCI6MTcwMzg2NTQzNywiaWF0IjoxNzAzNzc5MDM3LCJhZG1pbiI6dHJ1ZX0.HX5jgJhOccIKKo4THT8ljgNytABq5qf2lbA5KsBcAbg' "http://mp3converter.com/download?fid=658d9dfa971485f6829c2573"
+- the mongodb database running in the cluster is not persistent (so if you delete the pod, the data is lost)
+- the rabbitmq database running in the cluster is not persistent (so if you delete the pod, the data is lost)
+- when you get the message from the queue, that some connection got reset (mostly after e. g. purging the queue or restarting the service) you also have to restart the gateway service (something because of the routing via service name in the code)
+
+<p align="right">(<a href="#readme_top">back to top</a>)</p>
+
+## 👨🏻‍💼 Contributing
+
+Contributions are always welcome! Please look at following commit-conventions, while contributing: https://www.conventionalcommits.org/en/v1.0.0/#summary 😃
+
+1. Fork the project.
+2. Pick or create an [issue](https://github.com/MhouneyLH/deskify/issues) you want to work on.
+3. Create your Feature-Branch. (`git checkout -b feat/best_feature`)
+4. Commit your changes. (`git commit -m 'feat: add some cool feature'`)
+5. Push to the branch. (`git push origin feat/best_feature`)
+6. Open a Pull-Request into the Develop-Branch.
+
+<p align="right">(<a href="#readme_top">back to top</a>)</p>
